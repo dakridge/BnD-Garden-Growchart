@@ -28,32 +28,7 @@ function buildgraph( data )
 	var parseDate = d3.time.format("%m/%d/%Y").parse;
 	data.forEach(function(d){ d.Date = parseDate(d.Date); });
 
-	var max = d3.max( data.map(function(d){ return d3.max( d3.keys(d).filter(function(key){ return (key !== "Date") }).map(function(key){ return +d[key]; }) ) }) );
-	max = max * 1.2
-
-	var x = d3.time.scale()
-		.range([0, width])
-		.domain( d3.extent( data.map(function(d){ return d.Date; }) ) );
-
-	var y = d3.scale.linear()
-		.range([height, 0])
-		.domain([0, max])
-
 	var color = d3.scale.category20();
-
-	var xAxis = d3.svg.axis()
-		.scale(x)
-		.orient("bottom");
-
-	var yAxis = d3.svg.axis()
-		.scale(y)
-		.orient("left");
-
-	var line = d3.svg.line()
-		.interpolate("basis")
-		.x(function(d) { return x(d.date); })
-		.y(function(d) { return y(d.value); });
-
 	var keys = d3.keys(data[0]).filter(function(key) { return (key !== "Date" && key !== "Blast") });
 
 	var lines = keys.map(function(key, i)
@@ -71,9 +46,32 @@ function buildgraph( data )
 		var ini = d.values[0].value;
 
 		d.values.forEach(function(dd, ii){ dd.value = dd.value - ini; });
-	});
+	});	
 
-	L = lines;
+	// var max = d3.max( data.map(function(d){ return d3.max( d3.keys(d).filter(function(key){ return (key !== "Date") }).map(function(key){ return +d[key]; }) ) }) );
+	var max = d3.max( lines.map(function(d){ return d3.max( d.values.map(function(dd){ return dd.value; }) ) }) )
+	max = max * 1.2
+
+	var x = d3.time.scale()
+		.range([0, width])
+		.domain( d3.extent( data.map(function(d){ return d.Date; }) ) );
+
+	var y = d3.scale.linear()
+		.range([height, 0])
+		.domain([0, max])
+
+	var xAxis = d3.svg.axis()
+		.scale(x)
+		.orient("bottom");
+
+	var yAxis = d3.svg.axis()
+		.scale(y)
+		.orient("left");
+
+	var line = d3.svg.line()
+		.interpolate("basis")
+		.x(function(d) { return x(d.date); })
+		.y(function(d) { return y(d.value); });
 
 	var svg = container.append("svg")
 		.attr("width", width + margin.left + margin.right)
